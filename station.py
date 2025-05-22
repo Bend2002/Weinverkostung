@@ -23,7 +23,7 @@ LÄNDER = sorted({w["herkunft"] for w in STATIONS})
 REBSORT = sorted({w["rebsorte"] for w in STATIONS})
 AROMEN = sorted({a.strip() for w in STATIONS for a in w.get("aromen", "").split(",") if a.strip()})
 
-FLAG = {"Italien": "🇮🇹", "Spanien": "🇪🇸"}
+FLAG = {"Deutschland":"🇩🇪","Frankreich":"🇫🇷","Italien":"🇮🇹","Spanien":"🇪🇸","Portugal":"🇵🇹","Niederlande":"🇳🇱","Chile":"🇨🇱"}
 
 # DB-Funktionen
 
