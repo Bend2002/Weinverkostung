@@ -1,4 +1,4 @@
-# main.py – Navigation & Einstieg
+# main.py – Navigation & Einstieg (Auto-Login via ?user=NAME)
 import streamlit as st
 import os
 import sqlite3
@@ -25,10 +25,15 @@ def init_users():
 
 init_users()
 
-# Wenn nicht eingeloggt → Login anzeigen
+# Auto-Login via URL Param
 if "user" not in st.session_state:
-    auth_page()
-    st.stop()
+    qp = st.query_params
+    if "user" in qp:
+        st.session_state["user"] = qp["user"]
+        st.experimental_rerun()
+    else:
+        auth_page()
+        st.stop()
 
 # User & Team abrufen
 user = st.session_state["user"]
