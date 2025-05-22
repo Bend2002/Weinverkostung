@@ -1,9 +1,9 @@
-# main.py – Navigation & Einstieg (Auto-Login via ?user=NAME)
+# main.py – Auto-Login & Teamwahl separat
 import streamlit as st
 import os
 import sqlite3
 
-from auth import auth_page
+from auth import auth_page, team_page
 from station import station_page
 from admin import admin_page
 from leaderboard import leaderboard_page
@@ -12,7 +12,6 @@ st.set_page_config(page_title="WanderWinzer", page_icon="🍷", layout="centered
 
 DB_NAME = os.path.join(os.getcwd(), "wander.db")
 
-# DB-Init für Nutzer
 def init_users():
     with sqlite3.connect(DB_NAME) as conn:
         conn.execute("""
@@ -25,7 +24,7 @@ def init_users():
 
 init_users()
 
-# Auto-Login via URL Param
+# Auto-Login über URL ?user=NAME
 if "user" not in st.session_state:
     qp = st.query_params
     if "user" in qp:
@@ -35,13 +34,19 @@ if "user" not in st.session_state:
         auth_page()
         st.stop()
 
-# User & Team abrufen
 user = st.session_state["user"]
+
+# Team abfragen
 with sqlite3.connect(DB_NAME) as conn:
     row = conn.execute("SELECT team FROM users WHERE username = ?", (user,)).fetchone()
-    team = row[0] if row else "Unbekannt"
+    team = row[0] if row else None
 
-# Sidebar anzeigen
+# Wenn kein Team → Teamwahl anzeigen
+if not team:
+    team_page(user)
+    st.stop()
+
+# Sidebar & Navigation
 with st.sidebar:
     st.markdown(f"👤 **{user}**\n🏷️ Team: `{team}`")
     menu = st.radio("Navigation", ["Wein-Bewertung", "Ranking"] + (["Admin"] if user == "admin" else []))
@@ -49,7 +54,6 @@ with st.sidebar:
         del st.session_state["user"]
         st.experimental_rerun()
 
-# Seitenlogik
 if menu == "Wein-Bewertung":
     station_page()
 elif menu == "Ranking":
