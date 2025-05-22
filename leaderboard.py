@@ -1,98 +1,81 @@
-# leaderboard.py – Punktwertung pro Station + Gesamtschnitt
+# leaderboard.py – Auswertung nach allen Weinen (Gesamt & aktuelle Station)
 import streamlit as st
-import sqlite3, os
-from station import STATIONS, get_app_state
+import sqlite3
+import os
+from station import STATIONS
 
 DB = os.path.join(os.getcwd(), "wander.db")
 
-# ----- Scoring‑Funktion -------------------------------------
+# Punktevergabe: pro korrektes Feld 1 Punkt
+FELDER = ["herkunft", "rebsorte", "jahrgang"]
 
-def score_rating(rating_row, wine):
-    """Berechne Punkte für einen Rating‑Datensatz.
-    rating_row = (user, station_id, geschmack, alkohol, preis, land, rebsorte, aromen, kommentar)
-    """
-    _, _, _, _, preis_tipp, land_tipp, rs_tipp, aromen_tipp, _ = rating_row
+# Aromen zählen als Einzeltreffer
+
+# Preis ±1€ gibt einen Punkt
+
+def score_rating(row, wine):
+    _, _, _, _, preis, land, rs, aromen, jahrgang, _ = row
     score = 0
-
-    # Land, Rebsorte, Farbe, Jahrgang
-    if land_tipp == wine["herkunft"]:      # 1 Punkt
+    if land == wine["herkunft"]:
         score += 1
-    if rs_tipp == wine["rebsorte"]:
+    if rs == wine["rebsorte"]:
         score += 1
-    # Farbe und Jahrgang optional im UI – falls später ergänzt
-    if str(wine.get("farbe")) and str(wine.get("farbe")) in land_tipp:
-        score += 0  # Platzhalter – Farbe derzeit nicht abgefragt
-    # Jahrgang nicht getippt -> 0 Punkte
-
-    # Aromen – jeder Treffer 1 Punkt
-    if aromen_tipp:
-        guessed = {a.strip() for a in aromen_tipp.split(",") if a.strip()}
-        true_set = {a.strip() for a in wine.get("aromen", "").split(",")}
-        score += len(guessed & true_set)
-
-    # Preis ±1 €
-    if preis_tipp is not None and abs(preis_tipp - wine["preis"]) <= 1:
+    if jahrgang == wine["jahrgang"]:
         score += 1
+
+    # Preis ±1
+    if abs(preis - wine["preis"]) <= 1:
+        score += 1
+
+    # Aromen (jede richtige +1)
+    echte = {a.strip() for a in wine["geschmack"].split(",")}
+    getippt = {a.strip() for a in aromen.split(",")}
+    score += len(echte & getippt)
 
     return score
 
-# ----- Team‑Scores ------------------------------------------
-
-def calc_scores():
+def get_scores(for_station=None):
     with sqlite3.connect(DB) as c:
+        c.row_factory = sqlite3.Row
         users = dict(c.execute("SELECT username, team FROM users").fetchall())
-        ratings = c.execute("SELECT * FROM ratings").fetchall()
+        query = "SELECT * FROM ratings"
+        if for_station:
+            query += f" WHERE station_id = {for_station}"
+        ratings = c.execute(query).fetchall()
 
-    # Aktueller Spielstand
-    state = get_app_state()
-    current_sid = state.get("current_station", 0)
+        scores = {}
+        counts = {}
 
-    team_current = {}
-    team_total   = {}
-    team_cnt_cur = {}
-    team_cnt_tot = {}
+        for row in ratings:
+            user = row["user"]
+            team = users.get(user, "?")
+            station_id = row["station_id"]
+            wine = next((s for s in STATIONS if s["id"] == station_id), None)
+            if not wine:
+                continue
+            punkte = score_rating(row, wine)
+            scores[team] = scores.get(team, 0) + punkte
+            counts[team] = counts.get(team, 0) + 1
 
-    for row in ratings:
-        user, sid = row[0], row[1]
-        team = users.get(user, "?")
-        wine = next((w for w in STATIONS if w["id"] == sid), None)
-        if not wine:
-            continue
-        pts = score_rating(row, wine)
-
-        # Gesamt
-        team_total[team] = team_total.get(team, 0) + pts
-        team_cnt_tot[team] = team_cnt_tot.get(team, 0) + 1
-
-        # Aktuelle Station
-        if sid == current_sid:
-            team_current[team] = team_current.get(team, 0) + pts
-            team_cnt_cur[team] = team_cnt_cur.get(team, 0) + 1
-
-    leaderboard = []
-    for team in team_total:
-        avg_total = round(team_total[team]/team_cnt_tot[team], 2)
-        avg_cur   = (round(team_current[team]/team_cnt_cur[team], 2)
-                     if team in team_current else 0)
-        leaderboard.append((team, avg_cur, avg_total))
-
-    # Sortierung: erst aktuelle Station, dann Gesamt
-    return sorted(leaderboard, key=lambda x: (-x[1], -x[2]))
-
-# ----- Streamlit‑Seite --------------------------------------
+        results = [(team, round(scores[team]/counts[team], 2)) for team in scores]
+        return sorted(results, key=lambda x: -x[1])
 
 def leaderboard_page():
-    st.title("🏆 Team‑Punkte")
+    st.title("🏅 Team-Leaderboard")
 
-    data = calc_scores()
-    if not data:
-        st.info("Noch keine Bewertungen vorliegend.")
-        return
+    st.subheader("Aktuelle Station")
+    current = STATIONS[-1]["id"] if STATIONS else None
+    current_results = get_scores(for_station=current)
+    if current_results:
+        for i, (team, score) in enumerate(current_results, 1):
+            st.markdown(f"**{i}. {team}** – Ø Punkte: `{score}`")
+    else:
+        st.info("Noch keine Bewertungen für diese Station.")
 
-    st.markdown("| Rang | Team | Punkte aktuell | Gesamt‑Ø |\n|-----|-----|---------------|-----------|")
-    for idx, (team, cur, ges) in enumerate(data, 1):
-        st.markdown(f"| {idx} | {team} | {cur} | {ges} |")
-
-    if st.button("🔄 Aktualisieren"):
-        st.rerun()
-
+    st.subheader("Gesamtwertung")
+    total_results = get_scores()
+    if total_results:
+        for i, (team, score) in enumerate(total_results, 1):
+            st.markdown(f"**{i}. {team}** – Ø Punkte: `{score}`")
+    else:
+        st.info("Noch keine Bewertungen vorhanden.")
