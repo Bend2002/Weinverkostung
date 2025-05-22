@@ -1,61 +1,73 @@
-# main.py – Einstiegspunkt & Navigation mit URL-Login
+# main.py – Steuerung der App
 import streamlit as st
 import os
 import sqlite3
 
 from auth import auth_page, team_page
 from station import station_page
-from admin import admin_page
 from leaderboard import leaderboard_page
+from admin import admin_page
 
-st.set_page_config(page_title="WanderWinzer", page_icon="🍷", layout="centered")
+DB_FILE = os.path.join(os.getcwd(), "wander.db")
 
-DB_NAME = os.path.join(os.getcwd(), "wander.db")
+st.set_page_config("WanderWinzer", "🍷", layout="centered")
 
-def init_users():
-    with sqlite3.connect(DB_NAME) as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                username TEXT PRIMARY KEY,
-                password TEXT,
-                team TEXT
-            )
-        """)
+# Datenbank vorbereiten
+conn = sqlite3.connect(DB_FILE)
+c = conn.cursor()
+c.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        username TEXT PRIMARY KEY,
+        password TEXT,
+        team TEXT
+    )
+""")
+c.execute("""
+    CREATE TABLE IF NOT EXISTS ratings (
+        user TEXT, station_id INT,
+        geschmack INT, alkohol REAL, preis REAL,
+        land TEXT, rebsorte TEXT, aromen TEXT,
+        kommentar TEXT,
+        PRIMARY KEY(user, station_id)
+    )
+""")
+conn.commit()
+conn.close()
 
-init_users()
+# Benutzername aus URL (z. B. /?user=max)
+query_params = st.query_params
+if "user" in query_params:
+    st.session_state["user"] = query_params["user"]
 
-# Login per URL (?user=name)
-query = st.query_params
-if "user" in query:
-    user = query["user"]
-    st.session_state["user"] = user
-else:
+# Authentifizierung
+if "user" not in st.session_state:
     auth_page()
     st.stop()
 
-# Team auslesen
+# Benutzername ermitteln
 user = st.session_state["user"]
-with sqlite3.connect(DB_NAME) as conn:
-    row = conn.execute("SELECT team FROM users WHERE username = ?", (user,)).fetchone()
-    team = row[0] if row else None
 
-# Wenn noch kein Team vergeben → Teamseite zeigen
-if not team:
-    team_page(user)
+# Team auslesen
+conn = sqlite3.connect(DB_FILE)
+c = conn.cursor()
+row = c.execute("SELECT team FROM users WHERE username = ?", (user,)).fetchone()
+conn.close()
+if row is None:
+    team_page()
     st.stop()
+team = row[0]
 
-# Sidebar Navigation
-with st.sidebar:
-    st.markdown(f"👤 **{user}**\n🏷️ Team: `{team}`")
-    menu = st.radio("Navigation", ["Wein-Bewertung", "Ranking"] + (["Admin"] if user == "admin" else []))
-    if st.button("Logout"):
-        st.query_params.clear()
-        st.rerun()
+# Navigation
+st.sidebar.success(f"Eingeloggt als {user} | Team: {team}")
+if st.sidebar.button("Logout"):
+    del st.session_state["user"]
+    st.query_params.clear()
+    st.experimental_rerun()
 
-# Navigation weiterleiten
-if menu == "Wein-Bewertung":
-    station_page()
-elif menu == "Ranking":
-    leaderboard_page()
-elif menu == "Admin" and user == "admin":
+# Seitenwahl
+if user == "admin":
     admin_page()
+elif st.sidebar.button("Leaderboard"):
+    leaderboard_page()
+else:
+    station_page()
