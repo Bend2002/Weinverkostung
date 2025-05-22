@@ -5,10 +5,18 @@ import os
 
 DB = os.path.join(os.getcwd(), "wander.db")
 
-# Weinliste (Beispiel – erweiterbar)
+# station.py – direkte Einfügestelle
 STATIONS = [
-    {"id": 1, "name": "Lenotti Custoza", "jahrgang": 2023, "herkunft": "Italien", "rebsorte": "Cuvée", "farbe": "Weiß", "alkohol": 12.0, "preis": 6.95, "aromen": "Apfel, Limette, Mineral"},
-    {"id": 2, "name": "Rio Lindo Syrah", "jahrgang": 2023, "herkunft": "Spanien", "rebsorte": "Syrah", "farbe": "Rot", "alkohol": 13.5, "preis": 6.95, "aromen": "Brombeere, Pflaume, Würze"}
+    {"id": 1,  "name": "Lenotti Custoza",                          "jahrgang": 2023, "herkunft": "Italien",     "rebsorte": "Garganega / Trebbiano / Cortese",           "farbe": "Weiß", "preis": 6.95, "alkohol": 12.0, "aromen": "Apfel, Melone, Limette, Mineral"},
+    {"id": 2,  "name": "Rio Lindo Syrah",                          "jahrgang": 2023, "herkunft": "Spanien",     "rebsorte": "Syrah",                                     "farbe": "Rot",  "preis": 6.95, "alkohol": None, "aromen": "Brombeere, Pflaume, Würze"},
+    {"id": 3,  "name": "Trebbiano d’Abruzzo Bio (Cantina Tollo)",  "jahrgang": 2024, "herkunft": "Italien",     "rebsorte": "Trebbiano",                                 "farbe": "Weiß", "preis": 8.00, "alkohol": None, "aromen": "Apfel, Zitrus, Mandel"},
+    {"id": 4,  "name": "Mario Collina Primitivo Rosato",           "jahrgang": 2023, "herkunft": "Italien",     "rebsorte": "Primitivo",                                 "farbe": "Rosé", "preis": 2.29, "alkohol": None, "aromen": "Erdbeere, Kirsche, Himbeere"},
+    {"id": 5,  "name": "Alegrete Vinho Verde",                     "jahrgang": 2023, "herkunft": "Portugal",    "rebsorte": "Loureiro / Trajadura / Arinto",             "farbe": "Weiß", "preis": 2.95, "alkohol": None, "aromen": "Zitrone, Ananas, Mango, Mineral"},
+    {"id": 6,  "name": "Pierre Amadieu Ventoux “La Claretière”",   "jahrgang": 2021, "herkunft": "Frankreich",  "rebsorte": "Grenache / Syrah",                          "farbe": "Rot",  "preis": 8.95, "alkohol": 14.0, "aromen": "Kirsche, schwarze Johannisbeere, Kräuter, Pfeffer"},
+    {"id": 7,  "name": "Margarethenhof Saar Riesling",             "jahrgang": 2022, "herkunft": "Deutschland", "rebsorte": "Riesling",                                 "farbe": "Weiß", "preis": 9.95, "alkohol": 11.0, "aromen": "Grüner Apfel, Pfirsich, Schiefer"},
+    {"id": 8,  "name": "Kühling-Gillot “Hase” Sauvignon Blanc",    "jahrgang": 2023, "herkunft": "Deutschland", "rebsorte": "Sauvignon Blanc",                           "farbe": "Weiß", "preis": 8.95, "alkohol": 11.5, "aromen": "Stachelbeere, Johannisbeere, frisches Gras"},
+    {"id": 9,  "name": "Château La Genestière Côtes du Rhône blanc","jahrgang": 2022,"herkunft": "Frankreich",  "rebsorte": "Grenache Blanc / Viognier / Clairette",     "farbe": "Weiß", "preis": 6.95, "alkohol": 13.5, "aromen": "Steinobst, weiße Blüten, Honig"},
+    {"id": 10, "name": "Vino Blanco de España (Bag-in-Box)",       "jahrgang": 2022, "herkunft": "Spanien",     "rebsorte": "Blend (Airén / Macabeo …)",                 "farbe": "Weiß", "preis": 1.25, "alkohol": None, "aromen": "Zitrus, Apfel"}
 ]
 
 LÄNDER = sorted({w["herkunft"] for w in STATIONS})
