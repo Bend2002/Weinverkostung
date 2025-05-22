@@ -21,7 +21,7 @@ def admin_page():
         if st.button("🚦 Voting starten"):
             set_app_state(current_station=sid, mode="vote")
             st.success(f"Station {sid} im Voting-Modus.")
-            st.experimental_rerun()
+            st.rerun()
 
     with col2:
         if st.button("🔍 Auflösung anzeigen"):
@@ -30,4 +30,4 @@ def admin_page():
             else:
                 set_app_state(mode="reveal")
                 st.success("Auswertung aktiviert.")
-                st.experimental_rerun()
+                st.rerun()
