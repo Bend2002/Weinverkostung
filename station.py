@@ -18,7 +18,7 @@ STATIONS = [
     {"id": 9,  "name": "Rio Lindo Syrah",                          "jahrgang": 2023, "herkunft": "Spanien",          "rebsorte": "Syrah",                                     "farbe": "Rot",  "preis": 6.95, "alkohol": 14.0, "aromen": "Brombeere, Pflaume, Würze"},
     {"id": 10,  "name": "Mario Collina Primitivo Rosato",           "jahrgang": 2023, "herkunft": "Italien",          "rebsorte": "Primitivo",                                 "farbe": "Rosé", "preis": 2.29, "alkohol": 12.0, "aromen": "Erdbeere, Kirsche, Himbeere"},
     {"id": 11,  "name": "Bruusj Parelwijn",                          "jahrgang": 2023, "herkunft": "Niederlande",     "rebsorte": "Souvignier grau",                           "farbe": "Weiß",  "preis": 19,95, "alkohol": 10.5, "aromen": "Pfirsich, Aprikose, Ananas"},
-    {"id": 12, "name": "Vino Blanco de España (Bag-in-Box)",       "jahrgang": 2022, "herkunft": "Spanien",          "rebsorte": "Blend (Airén / Macabeo …)",                 "farbe": "Weiß", "preis": 1.25, "alkohol": None, "aromen": "Zitrus, Apfel"}
+    {"id": 12, "name": "Vino Blanco de España (Bag-in-Box)",       "jahrgang": 2022, "herkunft": "Spanien",          "rebsorte": "Blend (Airén / Macabeo …)",                 "farbe": "Weiß", "preis": 1.25, "alkohol": None, "aromen": "Zitrus, Apfel"},
     {"id": 13,  "name": "Trebbiano d’Abruzzo Bio (Cantina Tollo)",  "jahrgang": 2024, "herkunft": "Italien",          "rebsorte": "Trebbiano",                                 "farbe": "Weiß", "preis": 8.00, "alkohol": None, "aromen": "Apfel, Zitrus, Mandel"},
 
 ]
